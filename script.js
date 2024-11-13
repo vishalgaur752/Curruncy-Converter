@@ -6,16 +6,22 @@ const fromCurr = document.querySelector(".from select");
 const toCurr = document.querySelector(".to select");
 const msg = document.querySelector(".msg");
 
-
+// Ensure `countryList` is defined and contains the correct mappings for currency codes and country codes.
+const countryList = {
+    USD: "US",
+    INR: "IN",
+    // add other currency mappings here (currency code to country code)
+};
 
 for (let select of dropdowns) {
-    for (currCode in countryList) {
+    for (let currCode in countryList) { // added `let` for `currCode`
         let newOption = document.createElement("option");
         newOption.innerText = currCode;
         newOption.value = currCode;
-        if(select.name ==="from" &&  currCode === "USD") {
+
+        if (select.name === "from" && currCode === "USD") {
             newOption.selected = "selected";
-        } else if(select.name ==="to" &&  currCode === "INR") {
+        } else if (select.name === "to" && currCode === "INR") {
             newOption.selected = "selected";
         }
         select.append(newOption);
@@ -23,29 +29,46 @@ for (let select of dropdowns) {
     select.addEventListener("change", (evt) => {
         updateFlag(evt.target);
     });
-};
+}
+
 const updateExchangeRate = async () => {
     let amount = document.querySelector(".amount input");
     let amtVal = amount.value;
+
     if (amtVal === "" || amtVal < 1) {
         amtVal = 1;
         amount.value = "1";
     }
-    
-    const URL = `${BASE_URL}/${fromCurr.value.toLowerCase()}/${toCurr.value.toLowerCase()}.json`;
-    let response = await fetch(URL);
-    let data =  await response.json();
-    let rate = data[toCurr.value.toLowerCase()];
 
-    let finalAmount = amtVal * rate;
-    msg.innerText = `${amtVal} ${fromCurr.value} = ${finalAmount} ${toCurr.value}`;
+    const URL = `${BASE_URL}/${fromCurr.value.toLowerCase()}/${toCurr.value.toLowerCase()}.json`;
+    
+    try {
+        let response = await fetch(URL);
+        let data = await response.json();
+        let rate = data[toCurr.value.toLowerCase()];
+
+        if (rate) {
+            let finalAmount = amtVal * rate;
+            msg.innerText = `${amtVal} ${fromCurr.value} = ${finalAmount.toFixed(2)} ${toCurr.value}`;
+        } else {
+            msg.innerText = "Exchange rate not available.";
+        }
+    } catch (error) {
+        msg.innerText = "Failed to fetch exchange rate.";
+    }
 }
+
 const updateFlag = (element) => {
     let currCode = element.value;
     let countryCode = countryList[currCode];
-    let newSrc = `https://flagsapi.com/${countryCode}/flat/64.png`;
-    let img = element.parentElement.querySelector("img");
-    img.src = newSrc;
+
+    if (countryCode) {
+        let newSrc = `https://flagsapi.com/${countryCode}/flat/64.png`;
+        let img = element.parentElement.querySelector("img");
+        if (img) {
+            img.src = newSrc;
+        }
+    }
 };
 
 btn.addEventListener("click", (evt) => {
@@ -55,4 +78,4 @@ btn.addEventListener("click", (evt) => {
 
 window.addEventListener("load", () => {
     updateExchangeRate();
-})
+});

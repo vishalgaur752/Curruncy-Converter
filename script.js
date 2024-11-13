@@ -9,7 +9,7 @@ const msg = document.querySelector(".msg");
 // Ensure `countryList` is defined and contains the correct mappings for currency codes and country codes.
 const countryList = {
     USD: "US",
-    INR: "IN",
+    AED: "AE",
     // add other currency mappings here (currency code to country code)
 };
 
